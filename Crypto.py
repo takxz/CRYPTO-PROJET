@@ -1,5 +1,7 @@
+import streamlit as st
 import hashlib
 
+# Fonctions de ton script
 def generate_primes(n):
     primes = []
     i = 2
@@ -9,7 +11,6 @@ def generate_primes(n):
         i += 1
     return primes
 
-#utilser haslib pour crypter salt
 def derive_key(salt, length):
     hash_obj = hashlib.sha256(salt.encode())
     key = hash_obj.digest()
@@ -50,16 +51,37 @@ def decrypt(encrypted, salt):
 
     return decrypted
 
+# -------------------------------
+# STREAMLIT APP
 
-#Utilisation
-phrase = "Bonjour, c'est un test d'encryptage grâce à ce petit algorithme fait maison"
-salt = "AjvfklvjklbBFIEHZOI54564"
+st.title("🔒 Cryptage maison avec Streamlit")
 
+mode = st.radio("Que veux-tu faire ?", ("Crypter", "Décrypter"))
 
-chiffre = [54, 13, 175, 139, 121, 0, 22, 207, 67, 20, 62, 61, 184, 73, 223, 81, 174, 191, 64, 243, 104, 208, 231, 74, 210, 140, 252, 95, 153, 99, 101, 217, 85, 227, 240, 37, 45, 203, 120, 
-105, 110, 229, 213, 185, 61, 123, 194, 17, 196, 49, 162, 71, 156, 109, 167, 179, 122, 172, 162, 191, 182, 248, 127, 12, 19, 31, 5, 159, 30, 187, 36, 150, 197, 160, 114]
-# chiffre = encrypt(phrase, salt)
-# print("Chiffré :", chiffre)
+salt = st.text_input("Entrez votre salt", value="AjvfklvjklbBFIEHZOI54564")
 
-dechiffre = decrypt(chiffre, salt)
-print("Déchiffré :", dechiffre)
+if mode == "Crypter":
+    phrase = st.text_area("Entrez la phrase à crypter")
+    
+    if st.button("Crypter"):
+        if phrase and salt:
+            encrypted = encrypt(phrase, salt)
+            st.success("Phrase cryptée avec succès !")
+            st.code(encrypted)
+        else:
+            st.error("Merci d'entrer une phrase et un salt.")
+
+elif mode == "Décrypter":
+    encrypted_input = st.text_area("Entrez la liste de nombres cryptés (ex: 12, 34, 56)")
+    
+    if st.button("Décrypter"):
+        if encrypted_input and salt:
+            try:
+                encrypted_list = [int(x.strip()) for x in encrypted_input.split(",")]
+                decrypted = decrypt(encrypted_list, salt)
+                st.success("Phrase décryptée avec succès !")
+                st.code(decrypted)
+            except Exception as e:
+                st.error(f"Erreur dans le format de la liste : {e}")
+        else:
+            st.error("Merci d'entrer une liste de nombres cryptés et un salt.")
